@@ -1,17 +1,3 @@
-# Class: network
-#
-# This module manages Red Hat/Fedora network configuration.
-#
-class network {
-  # Only run on RedHat derived systems.
-  case $::osfamily {
-    'RedHat': { }
-    default: {
-      fail('This network module only supports RedHat-based systems.')
-    }
-  }
-} # class network
-
 # Definition: network_if_base
 #
 # This definition is private, i.e. it is not intended to be called directly
@@ -57,7 +43,7 @@ class network {
 #   LINKDELAY=
 #   REORDER_HDR=yes|no
 #
-define network_if_base (
+define network::iface (
   $ensure,
   $ipaddress,
   $netmask,
@@ -66,19 +52,18 @@ define network_if_base (
   $bootproto = 'none',
   $mtu = '',
   $ethtool_opts = '',
-  $bonding_opts = '',
-  $isalias = false,
-  $peerdns = false,
+  #$peerdns = false,
   $dns1 = '',
   $dns2 = '',
   $domain = ''
-) {
+)
+{
   # Validate our booleans
-  validate_bool($isalias)
-  validate_bool($peerdns)
+  #validate_bool($peerdns)
   # Validate our regular expressions
-  $states = [ '^up$', '^down$' ]
-  validate_re($ensure, $states, '$ensure must be either "up" or "down".')
+
+  #$states = [ '^up$', '^down$' ]
+  #validate_re($ensure, $states, '$ensure must be either "up" or "down".')
 
   $interface = $name
 
@@ -96,20 +81,10 @@ define network_if_base (
     $dns2_real = $dns2
   }
 
-  if $isalias {
-    $onparent = $ensure ? {
-      'up'    => 'yes',
-      'down'  => 'no',
-      default => undef,
-    }
-    $iftemplate = template('network/ifcfg-alias.erb')
-  } else {
-    $onboot = $ensure ? {
-      'up'    => 'yes',
-      'down'  => 'no',
-      default => undef,
-    }
-    $iftemplate = template('network/ifcfg-eth.erb')
+  $onboot = $ensure ? {
+    'up'    => 'yes',
+    'down'  => 'no',
+    default => undef,
   }
 
   file { "ifcfg-${interface}":
@@ -118,7 +93,7 @@ define network_if_base (
     owner   => 'root',
     group   => 'root',
     path    => "/etc/sysconfig/network-scripts/ifcfg-${interface}",
-    content => $iftemplate,
+    content => template('network/ifcfg-eth.erb'),
   }
 
   case $ensure {
@@ -140,4 +115,11 @@ define network_if_base (
     default: {}
   }
 
-} # define network_if_base
+} # define network::iface
+
+
+# Local Variables:
+#   mode: puppet
+#     puppet-indent-level: 4
+#     indent-tabs-mode: nil
+# End:
