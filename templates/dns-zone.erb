@@ -1,0 +1,10 @@
+$ORIGIN <%= @domain %>.     ; designates the start of this zone file in the namespace
+$TTL 1h                  ; default expiration time of all resource records without their own TTL value
+<%= @domain %>.  IN  SOA   ns.<%= @domain %>. trd.<%= @domain %>. ( 2007120710 1d 2h 4w 1h )
+<%= @domain %>.  IN  NS    vtrd01                    ; ns.example.com is a nameserver for example.com
+<% @arecords.each do |h| -%>
+<%= sprintf("%-16s IN  A    %s", h['name'], h['ip']) %>
+<%end -%>
+<% @cnames.each do |h| -%>
+<%= sprintf("%-16s CNAME    %s", h['name'], h['cname']) %>
+<%end -%>

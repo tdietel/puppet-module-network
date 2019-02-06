@@ -15,17 +15,23 @@
 # Sample Usage:
 #
 class network::dhcp (
+  $network,
+  $netmask,
   $gateway,
   $nameservers,
   $interfaces,
-  $hosts )
+  $hosts,
+  $extraconf = {},
+  $dnsdomain = undef
+)
 {
 
   class { 'dhcp':
     service_ensure => running,
+    dnsdomain => $dnsdomain,
     #dnsdomain      => [
     #                   'trd.local',
-                       #'10.55.44.in-addr.arpa',
+    #                   #'10.55.44.in-addr.arpa',
     #                   ],
     nameservers  => $nameservers,
     #ntpservers   => ['us.pool.ntp.org'],
@@ -36,18 +42,20 @@ class network::dhcp (
     #pxeserver    => '10.0.1.50', 
     #pxefilename  => 'pxelinux.0',
     #omapi_port   => 7911,
+    dhcp_conf_fragments => $extraconf,
   }
 
   # create the subnet declaration
   dhcp::pool { 'trd.local':
-    network => '10.99.0.0',
-    mask    => '255.255.255.0',
-    range   => '10.99.0.240 10.99.0.250',
+    network => $network,
+    mask    => $netmask,
+    #range   => '10.99.0.240 10.99.0.250',
     gateway => $gateway,
   }
 
-  # create DHCP entries for all hosts
-  $hosts.each | $h | {
+  # create DHCP entries for all hosts that have a MAC
+  $dhcphosts = $hosts.filter |$h| { $h['mac'] != undef }
+  $dhcphosts.each | $h | {
     dhcp::host { $h['name']: mac => $h['mac'], ip => $h['ip'] }
   }
   
