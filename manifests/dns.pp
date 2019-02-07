@@ -16,6 +16,7 @@
 #
 class network::dns (
   $srvip,
+  $srvname,
   $domain,
   $rdomain,
   $network,
@@ -46,7 +47,7 @@ class network::dns (
     allow_query       => [ 'localnets' ],
     zones             => {
       $domain  => [ 'type master', "file \"$domain\"" ], 
-      $rdomain => [ 'type master', "file \"$rdomain\"" ], 
+      #$rdomain => [ 'type master', "file \"$rdomain\"" ], 
     },
   }
 
