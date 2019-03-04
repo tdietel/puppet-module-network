@@ -44,7 +44,13 @@ class network::dns (
     listen_on_addr    => [ $srvip ],
     #listen_on_v6_addr => [ ],
     forwarders        => $nameservers,
-    allow_query       => [ 'localnets' ],
+    #allow_query       => [ 'localnets' ],
+    allow_query       => [ 'any' ],
+
+    dnssec_enable     => 'no',
+    dnssec_validation => 'no',
+    dnssec_lookaside  => 'auto',
+    
     zones             => {
       $domain  => [ 'type master', "file \"$domain\"" ], 
       #$rdomain => [ 'type master', "file \"$rdomain\"" ], 
